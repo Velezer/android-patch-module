@@ -3,13 +3,17 @@
 This repository contains a real Android application (`app`) plus a reusable patch framework module (`patch-core`) for DEX-like bytecode transformation experiments.
 
 ## Modules
-- `app`: Android application entrypoint (`MainActivity`) demonstrating runtime execution of the patch engine.
+- `app`: Android application entrypoint (`MainActivity`) demonstrating installed-app selection and patch execution.
 - `patch-core`: Kotlin patch framework with modular signatures, scanners, graph checks, and transformations.
 
 ## Architecture
 
 ```text
-APK Input
+Installed Apps
+  ↓
+Target Selector (package name)
+  ↓
+APK Input / DEX IR
   ↓
 DEX Parser (IR iteration)
   ↓
@@ -22,6 +26,11 @@ Patch Engine (module transform application)
 Patch Result (applied count + touched methods)
 ```
 
+## Installed app selection flow
+- `PatchTargetSelector` chooses a patch target from discovered installed apps using package name.
+- `PatchWorkflow` composes selection + patch execution into one use case.
+- `MainActivity` loads installed apps from `PackageManager`, lets the user pick one, then patches the selected app model.
+
 ## Patch module contract
 A patch module defines:
 - name
@@ -33,8 +42,8 @@ A patch module defines:
 Implemented example: `YouTubeSkipAdsModule` in `patch-core`.
 
 ## End-to-end test policy
-- E2E tests are implemented in `patch-core/src/test/.../PatchPipelineE2ETest.kt`.
-- Tests use real parser/scanner/graph matcher/engine/module components.
+- E2E tests are implemented in `patch-core/src/test/.../e2e`.
+- Tests use real parser/scanner/graph matcher/engine/module/workflow components.
 - No mocks or fakes.
 
 ## Run tests
@@ -55,9 +64,9 @@ Expected APK output:
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## CI workflow
-- Runs `patch-core` tests on every push and pull request.
-- Builds a debug APK and publishes it as a workflow artifact (`app-debug-apk`).
+## CI workflows
+- `tests.yml`: runs `patch-core` tests on every push and pull request.
+- `build-apk.yml`: separate APK workflow that first runs tests, then builds and uploads `app-debug.apk` as artifact `app-debug-apk`.
 
 ## Android app run
 Open with Android Studio and run `app` on device/emulator.
