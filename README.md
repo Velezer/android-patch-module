@@ -49,13 +49,13 @@ Implemented example: `YouTubeSkipAdsModule` in `patch-core`.
 ## Run tests
 
 ```bash
-gradle :patch-core:test --configure-on-demand
+gradle :patch-core:test --configure-on-demand --no-daemon
 ```
 
 ## Build debug APK
 
 ```bash
-gradle :app:assembleDebug --configure-on-demand
+gradle :app:assembleDebug --configure-on-demand --no-daemon
 ```
 
 Expected APK output:
@@ -67,6 +67,11 @@ app/build/outputs/apk/debug/app-debug.apk
 ## CI workflows
 - `tests.yml`: runs `patch-core` tests on every push and pull request.
 - `build-apk.yml`: separate APK workflow that first runs tests, then builds and uploads `app-debug.apk` as artifact `app-debug-apk`.
+
+## CI reliability notes
+- Workflows use `gradle/actions/setup-gradle` to provision a consistent Gradle runtime on every runner.
+- Workflows regenerate wrapper files during CI (`gradle wrapper --gradle-version 8.14.3`) so builds do not depend on storing binary wrapper JARs in the repository.
+- If CI reports Gradle command issues, verify that the setup-gradle step runs before build/test tasks.
 
 ## Android app run
 Open with Android Studio and run `app` on device/emulator.
