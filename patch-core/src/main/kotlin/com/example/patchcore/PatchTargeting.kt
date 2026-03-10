@@ -8,9 +8,10 @@ data class InstalledApp(
 
 class PatchTargetSelector {
     fun selectByPackageName(apps: List<InstalledApp>, packageName: String): InstalledApp {
-        require(packageName.isNotBlank()) { "packageName must not be blank" }
-        return apps.firstOrNull { it.packageName == packageName }
-            ?: throw IllegalArgumentException("Installed app not found for package: $packageName")
+        val normalizedPackageName = packageName.trim()
+        require(normalizedPackageName.isNotEmpty()) { "packageName must not be blank" }
+        return apps.firstOrNull { it.packageName == normalizedPackageName }
+            ?: throw IllegalArgumentException("Installed app not found for package: $normalizedPackageName")
     }
 }
 

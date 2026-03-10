@@ -70,4 +70,71 @@ class PatternScannerAndMatcherTest {
 
         assertTrue(GraphMatcher().hasTargetShape(method))
     }
+
+    @Test
+    fun scannerReturnsEmptyWhenPatternIsLargerThanMethodInstructions() {
+        val method = MethodIr(
+            className = "Lcom/example/player/Controller;",
+            methodName = "play",
+            strings = listOf("ad"),
+            calls = listOf("Player.isAd:()Z"),
+            instructions = mutableListOf(
+                Instruction("CONST_STRING"),
+                Instruction("IF_NEZ")
+            )
+        )
+
+        val signature = PatternSignature(
+            opcodePattern = listOf("CONST_STRING", "IF_NEZ", "INVOKE_VIRTUAL"),
+            requiredStrings = listOf("ad"),
+            requiredCalls = listOf("Player.isAd:()Z")
+        )
+
+        val matches = PatternScanner().scan(method, signature)
+
+        assertTrue(matches.isEmpty())
+    }
+
+    @Test
+    fun graphMatcherAcceptsExtendedBranchOpcodeSet() {
+        val method = MethodIr(
+            className = "Lcom/example/player/Controller;",
+            methodName = "play",
+            strings = emptyList(),
+            calls = emptyList(),
+            instructions = mutableListOf(
+                Instruction("IF_GEZ"),
+                Instruction("INVOKE_VIRTUAL"),
+                Instruction("RETURN")
+            )
+        )
+
+        assertTrue(GraphMatcher().hasTargetShape(method))
+    }
+
+    @Test
+    fun scannerReturnsEmptyWhenOpcodePatternIsEmpty() {
+        val method = MethodIr(
+            className = "Lcom/example/player/Controller;",
+            methodName = "play",
+            strings = listOf("ad"),
+            calls = listOf("Player.isAd:()Z"),
+            instructions = mutableListOf(
+                Instruction("CONST_STRING"),
+                Instruction("IF_NEZ"),
+                Instruction("INVOKE_VIRTUAL"),
+                Instruction("RETURN")
+            )
+        )
+
+        val signature = PatternSignature(
+            opcodePattern = emptyList(),
+            requiredStrings = listOf("ad"),
+            requiredCalls = listOf("Player.isAd:()Z")
+        )
+
+        val matches = PatternScanner().scan(method, signature)
+
+        assertTrue(matches.isEmpty())
+    }
 }
