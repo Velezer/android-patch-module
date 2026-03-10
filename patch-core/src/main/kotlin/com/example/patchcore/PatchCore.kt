@@ -28,15 +28,20 @@ class DexParser {
 
 class PatternScanner {
     fun scan(method: MethodIr, signature: PatternSignature): List<Match> {
-        if (!signature.requiredStrings.all { method.strings.contains(it) }) return emptyList()
-        if (!signature.requiredCalls.all { method.calls.contains(it) }) return emptyList()
         if (signature.opcodePattern.isEmpty()) return emptyList()
+
+        val methodStrings = method.strings.toSet()
+        if (!signature.requiredStrings.all { it in methodStrings }) return emptyList()
+
+        val methodCalls = method.calls.toSet()
+        if (!signature.requiredCalls.all { it in methodCalls }) return emptyList()
 
         val hits = mutableListOf<Match>()
         val ops = method.instructions.map { it.opcode }
         val patternSize = signature.opcodePattern.size
+        if (ops.size < patternSize) return emptyList()
 
-        for (start in 0..ops.size - patternSize) {
+        for (start in 0..<(ops.size - patternSize + 1)) {
             val window = ops.subList(start, start + patternSize)
             if (window == signature.opcodePattern) {
                 hits += Match(method, start, 1.0)
@@ -47,7 +52,10 @@ class PatternScanner {
 }
 
 class GraphMatcher {
-    private val branchOps = setOf("IF_EQZ", "IF_NEZ", "IF_EQ", "IF_NE")
+    private val branchOps = setOf(
+        "IF_EQZ", "IF_NEZ", "IF_EQ", "IF_NE",
+        "IF_LTZ", "IF_GEZ", "IF_GTZ", "IF_LEZ"
+    )
 
     fun hasTargetShape(method: MethodIr): Boolean {
         val ops = method.instructions.map { it.opcode }.toSet()
