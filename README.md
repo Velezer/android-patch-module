@@ -66,7 +66,7 @@ app/build/outputs/apk/debug/app-debug.apk
 
 ## CI workflows
 - `tests.yml`: runs `patch-core` tests on every push and pull request.
-- `build-apk.yml`: separate APK workflow that first runs tests, then builds and uploads `app-debug.apk` as artifact `app-debug-apk`.
+- `build-apk.yml`: separate APK workflow that builds and uploads `app-debug.apk` as artifact `app-debug-apk`.
 
 ## CI reliability notes
 - Workflows use `gradle/actions/setup-gradle` to provision a consistent Gradle runtime on every runner.
